@@ -16,11 +16,11 @@ from sklearn.cluster import KMeans
 #main_path = '/home/pythonrunnew/Algorithm'
 main_path = '/myweb/www/pythonrunnew/Algorithm'
 class DSIDEselectMutant():
-    def __init__(self,functioneveluate:Function,functionname:str,functiontype:str='UnimodalFunction',dimensiton:int=30,lowerbound:float=-100,upperbound:float=100,round:float=2000,populationsize:int=100,problemtype:str='Small'):
+    def __init__(self,functioneveluate:Function,functionname:str,functiontype:str='UnimodalFunction',dimension:int=30,lowerbound:float=-100,upperbound:float=100,round:float=2000,populationsize:int=100,problemtype:str='Small'):
         self.functioneveluate = functioneveluate
         self.functionname = functionname
         self.functiontype = functiontype
-        self.dimension = dimensiton
+        self.dimension = dimension
         self.lowerbound = lowerbound
         self.upperbound = upperbound
         self.round = round
@@ -31,7 +31,7 @@ class DSIDEselectMutant():
         #self.strategy = strategy
         #self.equlationoption = equlationoption
 
-    def selectbestmutant(self,component:np.array,scaling_factor:float,alpha:float)->np.array:
+    def selectbestmutant(self,component:np.array,scaling_factor:float,alpha:float)->tuple:
         mutantList = []
         fitnessList = []
         mutantList.append(alpha*component[0]+scaling_factor*(component[1]-component[2]))
@@ -46,7 +46,7 @@ class DSIDEselectMutant():
             fitnessList.append(self.functioneveluate(mutantList[i]))
         fitnessList = np.array(fitnessList)
         index_min = np.where(min(fitnessList)==fitnessList)[0][0]
-        return mutantList[index_min]
+        return mutantList[index_min],(index_min+1)
 
     def build_trial_vector(self,r_vector1:np.array,r_vector2:np.array,r_vector3:np.array,target_vector:np.array,crossover_rate:float,scaling_factor:float,alpha:float)->tuple:
         component = np.array([r_vector1,r_vector2,r_vector3])
@@ -55,7 +55,8 @@ class DSIDEselectMutant():
         d_trial = np.zeros(self.dimension)
         crossoverCount = 0
         dimension_count = 0
-        mutant_vector = self.selectbestmutant(component=component,scaling_factor=scaling_factor,alpha=alpha)
+        mutant_select = 0
+        mutant_vector,mutant_select = self.selectbestmutant(component=component,scaling_factor=scaling_factor,alpha=alpha)
         for i in range(self.dimension):
             if dummy_vector[i] > crossover_rate:
                 d_trial[i] = target_vector[i]
@@ -72,7 +73,7 @@ class DSIDEselectMutant():
         trial = d_trial
         dimension_count = crossoverCount
         
-        return trial,dimension_count
+        return trial,dimension_count,mutant_select
     
     def selection(self,trial_vector:np.array,target_vector:np.array)->np.array:
         trial_value = self.functioneveluate(trial_vector)
@@ -110,7 +111,8 @@ class DSIDEselectMutant():
         crossoverRate = cr
         scalingFactor = sf
         for k in range(replace):
-            population = np.random.uniform(low=self.lowerbound,hight=self.upperbound,size=(self.populationsize,self.dimension))
+            # print("replace: ",(k+1),flush=True)
+            population = np.random.uniform(low=self.lowerbound,high=self.upperbound,size=(self.populationsize,self.dimension))
             acceptCountinpopulation = np.zeros((self.round,1))
             #for i in range(self.populationsize):
             #    population[i:] = np.random.uniform(low=self.lowerbound,high=self.upperbound,size=self.dimension)
@@ -123,7 +125,9 @@ class DSIDEselectMutant():
             fitness_mean = np.mean(value)
             index = np.where(value == fitness_min)[0][0]
             minimized_vector = population[index]
+            selection_mutant = []
             for i in range(self.round):
+                # print("round: ",(i+1),flush=True)
                 population_dummy = np.zeros((self.populationsize,self.dimension))
                 generation_value = pow(1-(i+1)/self.round,2)
                 alpha_value = 1-pow(self.randomvalue,generation_value)
@@ -147,7 +151,8 @@ class DSIDEselectMutant():
                     rand_vec1 = population[vectorrand[0]]
                     rand_vec2 = population[vectorrand[1]]
                     rand_vec3 = population[vectorrand[3]]
-                    trial_vector,dimensionChangeInpopulation[j] = self.build_trial_vector(r_vector1=rand_vec1,r_vector2=rand_vec2,r_vector3=rand_vec3,target_vector=population[j],crossover_rate=crossoverRate,scaling_factor=scalingFactor,alpha=alpha_value)
+                    trial_vector,dimensionChangeInpopulation[j],select_dummy = self.build_trial_vector(r_vector1=rand_vec1,r_vector2=rand_vec2,r_vector3=rand_vec3,target_vector=population[j],crossover_rate=crossoverRate,scaling_factor=scalingFactor,alpha=alpha_value)
+                    selection_mutant.append(select_dummy)
                     population_dummy[j] = self.selection(trial_vector=trial_vector,target_vector=population[j])
                     if (population_dummy[j] == trial_vector).all():
                         acceptCountinpopulation[i][0] = acceptCountinpopulation[i][0]+1
@@ -220,8 +225,27 @@ class DSIDEselectMutant():
                         value_analysis[i][1] = minimized_value
                         value_analysis[i][2] = np.mean(value)
             
+            
+            
+
+            mutant_val = collections.Counter(np.array(selection_mutant))
+            #print(mutant_val)
+            barchart = np.zeros((6,2))
+            for i in range(1,7):
+                barchart[i-1][0] = i
+                barchart[i-1][1] = mutant_val[i]
+            # np.array([mutant_val[1],mutant_val[2],mutant_val[3],mutant_val[4],mutant_val[5],mutant_val[6]])
+
+            """ print("replace: ",(k+1)," select mutant(1->6): ",barchart,flush=True) """
             now3 = datetime.now()
             time_perround[k][0] = ((now3-now).seconds+((now3-now).microseconds)*1E-6)/self.round
+
+
+            file_path = self.main_path+'/raw_result/'+self.functionname+'_result/'+self.functionname+'_indexselect_'+self.filename+'_run_'+str(k+1)+'.csv'
+            with open(file_path,'w',encoding='UTF8',newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(['Index','Count'])
+                writer.writerows(barchart)
 
             file_path = self.main_path+'/raw_result/'+self.functionname+'_result/'+self.functionname+'_'+self.filename+'_run_'+str(k+1)+'.csv'
             with open(file_path,'w',encoding='UTF8',newline='') as f:
@@ -267,6 +291,27 @@ class DSIDEselectMutant():
         minsolution = np.zeros(replace)
         timecalculation = np.zeros(replace)
         roundstable = np.zeros(replace)
+
+        barchart = np.zeros((6,2))
+        barchart[0][0] = 1
+        barchart[1][0] = 2
+        barchart[2][0] = 3
+        barchart[3][0] = 4
+        barchart[4][0] = 5
+        barchart[5][0] = 6
+        for k in range(replace):
+            path = self.main_path+'/raw_result/'+self.functionname+'_result/'+self.functionname+'_indexselect_'+self.filename+'_run_'+str(k+1)+'.csv'
+            my_sol = pd.read_csv(path,nrows=6)
+            for i in range(6):
+                barchart[i][1] = barchart[i][1]+my_sol['Count'][i]/5
+            os.remove(path=path)
+
+        file_path = self.main_path+'/Indexselect/'+self.functiontype+'/value-'+self.problemtype+'/'+self.functionname+'_indexselect_'+self.filename+'.csv'
+        with open(file_path,'w',encoding='UTF8',newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Index','Count'])
+            writer.writerows(barchart)
+
         for k in range(replace):
             path = self.main_path+'/raw_result/'+self.functionname+'_result/'+self.functionname+'_'+self.filename+'_run_'+str(k+1)+'.csv'
             my_sol = pd.read_csv(path,nrows=self.round)
@@ -383,18 +428,18 @@ class DSIDEselectMutant():
         dimensionshow = dimensionAverage
 
 
-        print('DSIDE result of :',self.functiontype,'\t function name: ',self.functionname)
-        print('Function: ',self.functionname,' with experiment ',self.filename)
-        print('Minimized Solution average: ',np.average(minsolution))
-        print('Minimized Solution Max: ',str(max(minsolution)),' Minimized Solution Min: ',str(min(minsolution)))
-        print('Minimized Solution standart diviation: ',np.std(minsolution))
-        print('Time find optimal solution: ',np.average(timecalculation)/60,' minuted Timeperround ',np.mean(time_perround[0]))
-        print('Round find optimal solution: ',np.average(roundstable))
-        print('Number of dimension change: Max ',np.max(dimensionshow[2]),' Min ',np.min(dimensionshow[2]),' Mean ',np.mean(dimensionshow[2]))
-        print('Number of accept new soultion: Max ',np.max(acceptAverage),' Min ',np.min(acceptAverage),' Mean ',np.mean(acceptAverage))
-        print('Crossover rate: Max ',np.max(crossover_show[2]),' Min ',np.min(crossover_show[2]),' Mean ',np.mean(crossover_show[2]))
-        print('Scaling range: Max ',np.max(scaling_show[2]),' Min ',np.min(scaling_show[2]),' Mean ',np.mean(scaling_show[2]))
-        print('=================================================================')
+        print('DSIDE result of :',self.functiontype,'\t function name: ',self.functionname,flush=True)
+        print('Function: ',self.functionname,' with experiment ',self.filename,flush=True)
+        print('Minimized Solution average: ',np.average(minsolution),flush=True)
+        print('Minimized Solution Max: ',str(max(minsolution)),' Minimized Solution Min: ',str(min(minsolution)),flush=True)
+        print('Minimized Solution standart diviation: ',np.std(minsolution),flush=True)
+        print('Time find optimal solution: ',np.average(timecalculation)/60,' minuted Timeperround ',np.mean(time_perround[0]),flush=True)
+        print('Round find optimal solution: ',np.average(roundstable),flush=True)
+        print('Number of dimension change: Max ',np.max(dimensionshow[2]),' Min ',np.min(dimensionshow[2]),' Mean ',np.mean(dimensionshow[2]),flush=True)
+        print('Number of accept new soultion: Max ',np.max(acceptAverage),' Min ',np.min(acceptAverage),' Mean ',np.mean(acceptAverage),flush=True)
+        print('Crossover rate: Max ',np.max(crossover_show[2]),' Min ',np.min(crossover_show[2]),' Mean ',np.mean(crossover_show[2]),flush=True)
+        print('Scaling range: Max ',np.max(scaling_show[2]),' Min ',np.min(scaling_show[2]),' Mean ',np.mean(scaling_show[2]),flush=True)
+        print('=================================================================',flush=True)
 
 
 
@@ -404,11 +449,11 @@ class DSIDEselectMutant():
 #main_path = '/home/pythonrunnew/Algorithm'
 main_path = '/myweb/www/pythonrunnew/Algorithm'
 class DSIDEclustering():
-    def __init__(self,functioneveluate:Function,functionname:str,functiontype:str='UnimodalFunction',dimensiton:int=30,lowerbound:float=-100,upperbound:float=100,round:float=2000,populationsize:int=100,problemtype:str='Small') -> None:
+    def __init__(self,functioneveluate:Function,functionname:str,functiontype:str='UnimodalFunction',dimension:int=30,lowerbound:float=-100,upperbound:float=100,round:float=2000,populationsize:int=100,problemtype:str='Small') -> None:
         self.functioneveluate = functioneveluate
         self.functionname = functionname
         self.functiontype = functiontype
-        self.dimension = dimensiton
+        self.dimension = dimension
         self.lowerbound = lowerbound
         self.upperbound = upperbound
         self.round = round
@@ -432,14 +477,22 @@ class DSIDEclustering():
             return variance
 
     def buildTriallocal(self,population:np.array,targetvector:np.array,alpha:float)->tuple:
-        if len(population) >= 3:
-            valueLocal = np.array([self.functioneveluate(population[i]) for i in range(len(population))])
+        if len(population) >= 4:
             randomValue = np.random.uniform(low=0,high=1,size=self.dimension)
+            valueLocal = np.array([self.functioneveluate(population[i]) for i in range(len(population))])
             fitnessLocalmax = np.max(valueLocal)
             fitnessLocalmin = np.min(valueLocal)
             fitnessLocalmean = np.mean(valueLocal) 
             
+            targetindex = np.where(targetvector == population)[0][0]
+            #print('target index: ',targetindex)
             randvector = np.random.permutation(len(population))
+
+            #print('vector rand index1: ',randvector)
+            randvector = np.array(randvector[randvector != targetindex])
+            #print(len(randvector))
+            #print('vector rand index2: ',randvector)
+            #print('rand vec2: ',randvector[2])
             vecRand1 = population[randvector[0]]
             vecRand2 = population[randvector[1]]
             vecRand3 = population[randvector[2]]
@@ -454,11 +507,16 @@ class DSIDEclustering():
                 cr = (fitnessTarget-fitnessLocalmin)/fitnessLocalmean
                 sf = (fitnessLocalmax-fitnessTarget)/fitnessLocalmean
             
+            # print(vecRand1)
+            # print(vecRand2)
+            # print(vecRand3)
             mutantVec = alpha*vecRand1+sf*(vecRand2-vecRand3)
+            # print(mutantVec)
             trialvector = np.zeros(self.dimension)
             for i in range(self.dimension):
                 if randomValue[i] <= cr:
                     dimensionCount = dimensionCount+1
+                    #print(mutantVec[i])
                     trialvector[i] = mutantVec[i]
                 else:
                     trialvector[i] = targetvector[i]
@@ -467,33 +525,66 @@ class DSIDEclustering():
         else:
             return targetvector,0,0,0
 
-
-    def initialclusternumber(self,population:np.array):
-        varianceGroup = []
+    # if (i+1) % 10 == 0 and (i+1) != self.round:
+    #     count_value = collections.Counter(clusterLabel)
+    #     p_val = (self.numbercluster-1)+self.dimension*self.numbercluster+self.numbercluster
+    #     lcj = 0
+    #     for j in count_value:
+    #         clusterIndex = np.where(j == clusterLabel)[0]
+    #         popgroup = [population[clusterIndex[l]] for l in range(len(clusterIndex))]
+    #         var_val = self.varianceCalculation(population=popgroup,centercluster=cluster_group.cluster_centers_)
+    #         var_val = math.sqrt(var_val)
+    #         #print(var_val)
+    #         #print(count_value[j])
+    #         if var_val == 0:
+    #             lcj = lcj + 0
+    #         else:
+    #             lcj = lcj + -(count_value[j]/2)*math.log(2*math.pi)-((count_value[j]*self.dimension)/2)*math.log(var_val)-((count_value[j]-1)/2)+count_value[j]*math.log(count_value[j])
+    #     lc = lcj-self.populationsize*math.log(self.populationsize)
+    #     self.numbercluster = int(abs(lc-(p_val/2)*math.log(self.populationsize)))
+    #     print('Cluster is : ',self.numbercluster)
+    #     if self.numbercluster > self.populationsize/2:
+    #         self.numbercluster = int(self.populationsize/2)
+    #         print('RE Cluster is : ',self.numbercluster)
+        
+    #     cluster_group = KMeans(n_clusters=self.numbercluster).fit(population)
+    #     clusterLabel = cluster_group.labels_
+    def reclusterNumber(self,population:np.array):
+        BIC_val = []
         for i in range(2,int((self.populationsize/2)+1)):
             cluster_group = KMeans(n_clusters=i).fit(population)
             clusterCenter = cluster_group.cluster_centers_
             clusterLabel = cluster_group.labels_
             varcluster = 0
-            for j in range(i):
-                popgroup = []
+
+            count_value = collections.Counter(clusterLabel)
+            lcj = 0
+            lc = 0
+            p_val = 0
+            var_k = 0
+            for j in count_value:
                 clusterIndex = np.where(j == clusterLabel)[0]
                 popgroup = np.array([population[clusterIndex[l]] for l in range(len(clusterIndex))])
-                #print('j: val ',j,' in  i: ',i,' group')
-                #print(clusterIndex)
-                #print(popgroup)
-                c_var = self.varianceCalculation(population=popgroup,centercluster=clusterCenter[j])
-                c_var = math.sqrt(c_var)
-                if j == 0:
-                    varcluster = c_var
-                else:
-                    if c_var < varcluster:
-                        varcluster = c_var
-            
-            varianceGroup.append(varcluster)
+                var_val = self.varianceCalculation(population=popgroup,centercluster=cluster_group.cluster_centers_)          
+                if j+1 == i:
+                    var_k = var_val
 
-        varianceGroup = np.array(varianceGroup)
-        self.numbercluster = np.where(np.min(varianceGroup) == varianceGroup)[0][0]+2
+                if var_val == 0:
+                    lcj = lcj + -(count_value[j]/2)*math.log(2*math.pi)-((count_value[j]-1)/2)+count_value[j]*math.log(count_value[j])
+                else:
+                    lcj = lcj + -(count_value[j]/2)*math.log(2*math.pi)-((count_value[j]*self.dimension)/2)*math.log(var_val)-((count_value[j]-1)/2)+count_value[j]*math.log(count_value[j])
+                if(j+1 != (i)):
+                    p_val = p_val + (count_value[j]/self.populationsize)  #probabilities class
+                
+                
+            lc = lcj-self.populationsize*math.log(self.populationsize)
+            clusterCenter_nrom = np.linalg.norm(clusterCenter[i-1])
+            p_val = p_val+clusterCenter_nrom+var_k
+            bic = lc-(p_val/2)*math.log(self.populationsize)
+            BIC_val.append(bic)
+
+        BIC_val = np.array(BIC_val)
+        self.numbercluster = np.where(np.max(BIC_val) == BIC_val)[0][0]+2
 
     def selection(self,trial_vector:np.array,target_vector:np.array)->np.array:
         trial_value = self.functioneveluate(trial_vector)
@@ -528,7 +619,7 @@ class DSIDEclustering():
         dimensionChangecount = np.zeros((self.round,3))
         dimensionChangeInpopulation = np.zeros(self.populationsize)
 
-
+        
         """ crossoverRate = cr
         scalingFactor = sf """
 
@@ -537,46 +628,21 @@ class DSIDEclustering():
         for k in range(replace):
             now = datetime.now()
             population = np.random.uniform(low=self.lowerbound,high=self.upperbound,size=(self.populationsize,self.dimension))
-            self.initialclusternumber(population=population) #recluster for frist clustering
+            self.reclusterNumber(population=population) #recluster for frist clustering
             randomvalue = random.uniform(0,1)
             value = np.zeros(self.populationsize)
             for i in range(self.round):
-                print('round: ',(i+1),'number cluster: ',self.numbercluster)
+                #print('round: ',(i+1),'number cluster: ',self.numbercluster)
                 cluster_group = KMeans(n_clusters=self.numbercluster).fit(population)
                 clusterLabel = cluster_group.labels_
-                #print(clusterLabel)
-                if (i+1) % 10 == 0 and (i+1) != self.round:
-                    count_value = collections.Counter(clusterLabel)
-                    p_val = (self.numbercluster-1)+self.dimension*self.numbercluster+self.numbercluster
-                    lcj = 0
-                    for j in count_value:
-                        clusterIndex = np.where(j == clusterLabel)[0]
-                        popgroup = [population[clusterIndex[l]] for l in range(len(clusterIndex))]
-                        var_val = self.varianceCalculation(population=popgroup,centercluster=cluster_group.cluster_centers_)
-                        var_val = math.sqrt(var_val)
-                        #print(var_val)
-                        #print(count_value[j])
-                        if var_val == 0:
-                            lcj = lcj + 0
-                        else:
-                            lcj = lcj + -(count_value[j]/2)*math.log(2*math.pi)-((count_value[j]*self.dimension)/2)*math.log(var_val)-((count_value[j]-1)/2)+count_value[j]*math.log(count_value[j])
-                    lc = lcj-self.populationsize*math.log(self.populationsize)
-                    self.numbercluster = int(abs(lc-(p_val/2)*math.log(self.populationsize)))
-                    print('Cluster is : ',self.numbercluster)
-                    if self.numbercluster > self.populationsize/2:
-                        self.numbercluster = int(self.populationsize/2)
-                        print('RE Cluster is : ',self.numbercluster)
-                    
-                    cluster_group = KMeans(n_clusters=self.numbercluster).fit(population)
-                    clusterLabel = cluster_group.labels_
+                if i % 10 == 0:
+                    self.reclusterNumber(population=population)
 
                 generationratio = math.pow(1-((i+1)/self.round),2)
                 alphavalue = 1-math.pow(1-randomvalue,generationratio)
                 populationdummy = np.zeros((self.populationsize,self.dimension))
                 for j in range(self.populationsize):
                     groupIndex = np.where(clusterLabel[j] == clusterLabel)[0]
-                    deleteindex = np.where(j == groupIndex)[0][0]
-                    groupIndex = np.delete(groupIndex,deleteindex)
                     popgroup = np.array([population[groupIndex[l]] for l in range(len(groupIndex))])
                     trial,crossoverrateInpopulation[j],scalingfactorInpopulation[j],dimensionChangeInpopulation[j] = self.buildTriallocal(population=popgroup,targetvector=population[j],alpha=alphavalue)
                     populationdummy[j] = self.selection(trial_vector=trial,target_vector=population[j])
