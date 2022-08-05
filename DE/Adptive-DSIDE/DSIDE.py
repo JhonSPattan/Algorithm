@@ -1,9 +1,11 @@
 from pyclbr import Function
 import numpy as np
 import pandas as pd
+import collections
 import csv
 import random
 import os
+import math
 from datetime import  datetime
 
 #%% DSIDE Selection Mutant vector
@@ -207,7 +209,7 @@ class StandartDSIDE():
                 solution_average[0][j] = solution_average[0][j]+(solution[i][j]/replace)
         
         solution_average = np.transpose(solution_average)
-        file_path = self.main_path+'/Graph/'+self.functiontype+'/value-'+self.problemtype+'/'+self.functionname+'_'+self.filename+'.csv'
+        file_path = self.main_path+'/GraphStandart/'+self.functiontype+'/value-'+self.problemtype+'/'+self.functionname+'_'+self.filename+'.csv'
         with open(file_path,'w',encoding='UTF8',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Average'])
@@ -278,19 +280,19 @@ class StandartDSIDE():
                 acceptAverage[j] = acceptAverage[j] + acceptAnalysis[i][j]/replace
 
         #print(acceptAverage)
-        file_path = self.main_path+'/Scaling/'+self.functiontype+'/value-'+self.problemtype+'/'+self.functionname+'_'+self.filename+'_scalingvalue'+'.csv'
+        file_path = self.main_path+'/ScalingStandart/'+self.functiontype+'/value-'+self.problemtype+'/'+self.functionname+'_'+self.filename+'_scalingvalue'+'.csv'
         with open(file_path,'w',encoding='UTF8',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Max','Min','Mean'])
             writer.writerows(scalingfactorAveragevalue)
 
-        file_path = self.main_path+'/Crossover/'+self.functiontype+'/value-'+self.problemtype+'/'+self.functionname+'_'+self.filename+'_crossovervalue'+'.csv'
+        file_path = self.main_path+'/CrossoverStandart/'+self.functiontype+'/value-'+self.problemtype+'/'+self.functionname+'_'+self.filename+'_crossovervalue'+'.csv'
         with open(file_path,'w',encoding='UTF8',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Max','Min','Mean'])
             writer.writerows(crossoverAveragevalue)
 
-        file_path = self.main_path+'/Dimension/'+self.functiontype+'/value-'+self.problemtype+'/'+self.functionname+'_'+self.filename+'_dimensionvalue'+'.csv'
+        file_path = self.main_path+'/DimensionStandart/'+self.functiontype+'/value-'+self.problemtype+'/'+self.functionname+'_'+self.filename+'_dimensionvalue'+'.csv'
         with open(file_path,'w',encoding='UTF8',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Max','Min','Mean'])
