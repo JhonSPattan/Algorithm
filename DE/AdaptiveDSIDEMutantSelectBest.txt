@@ -1,0 +1,72 @@
+Adaptive DSIDE mutant select result of : UnimodalFunction 	 function name:  Sphere
+Function:  Sphere  with experiment  DSIDEselectionMutant
+Minimized Solution average:  0.0
+Minimized Solution Max:  0.0  Minimized Solution Min:  0.0
+Minimized Solution standart diviation:  0.0
+Time find optimal solution:  39.0  minuted Timeperround  0.00885330224
+Round find optimal solution:  1654.8
+Number of dimension change: Max  30.0  Min  0.0  Mean  17.7993333333
+Number of accept new soultion: Max  94.8  Min  0.0  Mean  11.04732
+Crossover rate: Max  1.87735715124  Min  0.0  Mean  0.947173907281
+Scaling range: Max  1.87735715124  Min  0.0  Mean  0.930183243961
+=================================================================
+Adaptive DSIDE mutant select result of : UnimodalFunction 	 function name:  Elliptic
+Function:  Elliptic  with experiment  DSIDEselectionMutant
+Minimized Solution average:  0.0
+Minimized Solution Max:  0.0  Minimized Solution Min:  0.0
+Minimized Solution standart diviation:  0.0
+Time find optimal solution:  77.0  minuted Timeperround  0.01819658152
+Round find optimal solution:  1610.2
+Number of dimension change: Max  30.0  Min  0.0  Mean  15.998
+Number of accept new soultion: Max  90.2  Min  0.0  Mean  12.59872
+Crossover rate: Max  1.13347858825  Min  0.0  Mean  0.580178668997
+Scaling range: Max  1.13347858825  Min  0.0  Mean  0.553299919249
+=================================================================
+Adaptive DSIDE mutant select result of : UnimodalFunction 	 function name:  Schwefel12
+Function:  Schwefel12  with experiment  DSIDEselectionMutant
+Minimized Solution average:  0.0
+Minimized Solution Max:  0.0  Minimized Solution Min:  0.0
+Minimized Solution standart diviation:  0.0
+Time find optimal solution:  349.4  minuted Timeperround  0.08565967548
+Round find optimal solution:  1634.4
+Number of dimension change: Max  30.0  Min  0.0  Mean  16.074
+Number of accept new soultion: Max  89.2  Min  0.0  Mean  13.51616
+Crossover rate: Max  1.1316755188  Min  0.0  Mean  0.580855090691
+Scaling range: Max  1.1316755188  Min  0.0  Mean  0.550820428104
+=================================================================
+Adaptive DSIDE mutant select result of : UnimodalFunction 	 function name:  Schwefel222
+Function:  Schwefel222  with experiment  DSIDEselectionMutant
+Minimized Solution average:  0.0
+Minimized Solution Max:  0.0  Minimized Solution Min:  0.0
+Minimized Solution standart diviation:  0.0
+Time find optimal solution:  51.4  minuted Timeperround  0.01201145948
+Round find optimal solution:  1530.0
+Number of dimension change: Max  22.4  Min  0.0  Mean  11.4173333333
+Number of accept new soultion: Max  97.6  Min  0.0  Mean  15.938
+Crossover rate: Max  0.68573524415  Min  0.0  Mean  0.359155216753
+Scaling range: Max  0.68573524415  Min  0.0  Mean  0.326580027396
+=================================================================
+Adaptive DSIDE mutant select result of : UnimodalFunction 	 function name:  Schwefel221
+Function:  Schwefel221  with experiment  DSIDEselectionMutant
+Minimized Solution average:  0.0
+Minimized Solution Max:  0.0  Minimized Solution Min:  0.0
+Minimized Solution standart diviation:  0.0
+Time find optimal solution:  38.6  minuted Timeperround  0.00855190504
+Round find optimal solution:  1664.8
+Number of dimension change: Max  10.2  Min  0.0  Mean  4.75866666667
+Number of accept new soultion: Max  100.0  Min  0.0  Mean  19.50332
+Crossover rate: Max  0.176165310952  Min  0.0  Mean  0.103761553004
+Scaling range: Max  0.176165310952  Min  0.0  Mean  0.0724037579479
+=================================================================
+Adaptive DSIDE mutant select result of : UnimodalFunction 	 function name:  Zakharov
+Function:  Zakharov  with experiment  DSIDEselectionMutant
+Minimized Solution average:  0.0
+Minimized Solution Max:  0.0  Minimized Solution Min:  0.0
+Minimized Solution standart diviation:  0.0
+Time find optimal solution:  48.4  minuted Timeperround  0.01099467996
+Round find optimal solution:  1655.4
+Number of dimension change: Max  30.0  Min  0.0  Mean  15.146
+Number of accept new soultion: Max  79.4  Min  0.0  Mean  10.72296
+Crossover rate: Max  5.54141525774  Min  0.0  Mean  2.18025901369
+Scaling range: Max  5.54141525774  Min  0.0  Mean  3.36115624405
+=================================================================
