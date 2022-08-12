@@ -13,8 +13,8 @@ from datetime import  datetime
 #main_path = '/home/pythonrunnew/Algorithm'
 main_path = '/myweb/www/pythonrunnew/Algorithm'
 
-#%% DSIDE Selection Mutant vector
-class DSIDEselectionMutant():
+#%% DSIDEmeanVector
+class DSIDEmeanVector():
     def __init__(self,functioneveluate:Function,functionname:str,functiontype:str='UnimodalFunction',dimension:int=30,lowerbound:float=-100,upperbound:float=100,round:float=2000,populationsize:int=100,problemtype:str='Small'):
         self.functioneveluate = functioneveluate
         self.functionname = functionname
@@ -31,9 +31,8 @@ class DSIDEselectionMutant():
         self.scalingFactor = 0
         self.alpha = 0
     
-    def selectionBestMutant(self,component:np.array)->tuple:
+    def selectionMeanMutant(self,component:np.array)->tuple:
         mutantList = []
-        fitnessList = []
         mutantList.append(self.alpha*component[0]+self.scalingFactor*(component[1]-component[2]))
         mutantList.append(self.alpha*component[0]+self.scalingFactor*(component[2]-component[1]))
         mutantList.append(self.alpha*component[1]+self.scalingFactor*(component[0]-component[2]))
@@ -42,11 +41,10 @@ class DSIDEselectionMutant():
         mutantList.append(self.alpha*component[2]+self.scalingFactor*(component[1]-component[0]))
 
         mutantList = np.array(mutantList)
-        for i in range(6):
-            fitnessList.append(self.functioneveluate(mutantList[i]))
-        fitnessList = np.array(fitnessList)
-        indexMin = np.where(min(fitnessList)==fitnessList)[0][0]
-        return mutantList[indexMin],(indexMin+1)
+        mutantVector = np.zeros(self.dimension)
+        for i in range(self.dimension):
+            mutantVector[i] = np.mean(mutantList[:,i])
+        return mutantVector
 
     def buildTrialVector(self,rVector1:np.array,rVector2:np.array,rVector3:np.array,targetVector:np.array)->tuple:
         component = np.array([rVector1,rVector2,rVector3])
@@ -55,8 +53,7 @@ class DSIDEselectionMutant():
         dTrial = np.zeros(self.dimension)
         crossoverCount = 0
         dimensionCount = 0
-        mutantSelect = 0
-        mutantVector,mutantSelect = self.selectionBestMutant(component=component)
+        mutantVector = self.selectionMeanMutant(component=component)
         for i in range(self.dimension):
             if dummyVector[i] > self.crossoverRate:
                 dTrial[i] = targetVector[i]
@@ -73,7 +70,7 @@ class DSIDEselectionMutant():
         trial = dTrial
         dimensionCount = crossoverCount
         
-        return trial,dimensionCount,mutantSelect
+        return trial,dimensionCount
     
     def selection(self,trialVector:np.array,targetVector:np.array)->np.array:
         trialValue = self.functioneveluate(trialVector)
@@ -146,8 +143,7 @@ class DSIDEselectionMutant():
                     vectorRand = np.random.permutation(self.populationsize)
                     delIndex = np.where(vectorRand == j)[0][0]
                     vectorRand = np.delete(vectorRand,delIndex,0)
-                    trialVector,dimensionChangeInpopulation[j],selectDummy = self.buildTrialVector(rVector1=population[vectorRand[0]],rVector2=population[vectorRand[1]],rVector3=population[vectorRand[2]],targetVector=population[j])
-                    selectMutant.append(selectDummy)
+                    trialVector,dimensionChangeInpopulation[j] = self.buildTrialVector(rVector1=population[vectorRand[0]],rVector2=population[vectorRand[1]],rVector3=population[vectorRand[2]],targetVector=population[j])
                     populationDummy[j] = self.selection(trialVector=trialVector,targetVector=population[j])
                     if(populationDummy[j] == trialVector).all():
                         acceptCountinpopulation[i][0] = acceptCountinpopulation[i][0]+1
@@ -166,20 +162,11 @@ class DSIDEselectionMutant():
 
                 population = populationDummy
 
+            
+
             now3 = datetime.now()
             timePerround[k][0] = ((now3-now).seconds+((now3-now).microseconds)*1E-6)/self.round
-
-            mutantVal = collections.Counter(np.array(selectMutant))
-            barchart = np.zeros((6,2))
-            for i in range(1,7):
-                barchart[i-1][0] = i
-                barchart[i-1][1] = mutantVal[i]
                 
-            file_path = self.main_path+'/raw_result/'+self.functionname+'_result/'+self.functionname+'_indexselect_'+self.filename+'_run_'+str(k+1)+'.csv'
-            with open(file_path,'w',encoding='UTF8',newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow(['Index','Count'])
-                writer.writerows(barchart)
 
             file_path = self.main_path+'/raw_result/'+self.functionname+'_result/'+self.functionname+'_'+self.filename+'_run_'+str(k+1)+'.csv'
             with open(file_path,'w',encoding='UTF8',newline='') as f:
@@ -212,7 +199,7 @@ class DSIDEselectionMutant():
                 writer = csv.writer(f)
                 writer.writerow(['Accept'])
                 for jk in range(self.round):
-                    writer.writerow([acceptCountinpopulation[jk][0]])
+                    writer.writerow([acceptCountinpopulation[i][0]])
 
         file_path = self.main_path+'/time/'+self.filename+'_timeperround.csv'
         with open(file_path,'w',encoding='UTF8',newline='') as f:
@@ -225,26 +212,6 @@ class DSIDEselectionMutant():
         minsolution = np.zeros(replace)
         timecalculation = np.zeros(replace)
         roundstable = np.zeros(replace)
-
-        barchart = np.zeros((6,2))
-        barchart[0][0] = 1
-        barchart[1][0] = 2
-        barchart[2][0] = 3
-        barchart[3][0] = 4
-        barchart[4][0] = 5
-        barchart[5][0] = 6
-        for k in range(replace):
-            path = self.main_path+'/raw_result/'+self.functionname+'_result/'+self.functionname+'_indexselect_'+self.filename+'_run_'+str(k+1)+'.csv'
-            my_sol = pd.read_csv(path,nrows=6)
-            for i in range(6):
-                barchart[i][1] = barchart[i][1]+my_sol['Count'][i]/5
-            os.remove(path=path)
-
-        file_path = self.main_path+'/Indexselect/'+self.functiontype+'/value-'+self.problemtype+'/'+self.functionname+'_indexselect_'+self.filename+'.csv'
-        with open(file_path,'w',encoding='UTF8',newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['Index','Count'])
-            writer.writerows(barchart)
 
         for k in range(replace):
             path = self.main_path+'/raw_result/'+self.functionname+'_result/'+self.functionname+'_'+self.filename+'_run_'+str(k+1)+'.csv'
@@ -361,11 +328,13 @@ class DSIDEselectionMutant():
         print('Minimized Solution average: ',np.average(minsolution),flush=True)
         print('Minimized Solution Max: ',str(max(minsolution)),' Minimized Solution Min: ',str(min(minsolution)),flush=True)
         print('Minimized Solution standart diviation: ',np.std(minsolution),flush=True)
-
-        print('Time find optimal solution: ',np.average(timecalculation),' minuted Timeperround ',np.mean(timePerround),flush=True)
+        print('Time find optimal solution: ',np.average(roundstable)*np.average(timePerround),' minuted Timeperround ',np.average(timePerround),flush=True)
         print('Round find optimal solution: ',np.average(roundstable),flush=True)
         print('Number of dimension change: Max ',np.max(dimensionshow[2]),' Min ',np.min(dimensionshow[2]),' Mean ',np.mean(dimensionshow[2]),flush=True)
         print('Number of accept new soultion: Max ',np.max(acceptAverage),' Min ',np.min(acceptAverage),' Mean ',np.mean(acceptAverage),flush=True)
         print('Crossover rate: Max ',np.max(crossover_show[2]),' Min ',np.min(crossover_show[2]),' Mean ',np.mean(crossover_show[2]),flush=True)
         print('Scaling range: Max ',np.max(scaling_show[2]),' Min ',np.min(scaling_show[2]),' Mean ',np.mean(scaling_show[2]),flush=True)
         print('=================================================================',flush=True)
+
+
+
