@@ -51,6 +51,22 @@ def Zakharov(vector_eveluate:np.array)->np.double:
 
 #%% Multimodal function
 
+
+def Alpine(vector_eveluate:np.array)->np.double:
+    function_result = 0
+    for i in range(len(vector_eveluate)):
+        function_result = function_result+abs(vector_eveluate[i]*math.sin(vector_eveluate[i])+0.1*vector_eveluate[i])
+    return function_result
+
+def Rastrigin(vector_eveluate:np.array)->np.double:
+    # -5.12,5.12
+    function_result = 0
+    for i in range(len(vector_eveluate)):
+        function_result = function_result+math.pow(vector_eveluate[i],2)-10*math.cos(2*math.pi*vector_eveluate[i])+10
+    return function_result
+
+
+
 def Bohchaevsky_2(vector_eveluate:np.array)->np.double:
     function_result = 0
     for i in range(len(vector_eveluate)-1):

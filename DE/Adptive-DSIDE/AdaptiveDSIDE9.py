@@ -1,4 +1,3 @@
-# Mix algorithm between Selection best vector and mean dimension vector
 from pyclbr import Function
 import numpy as np
 import pandas as pd
@@ -13,8 +12,7 @@ from datetime import  datetime
 #main_path = '/home/pythonrunnew/Algorithm'
 main_path = '/myweb/www/pythonrunnew/Algorithm'
 
-
-class DSIDEmixmeanVector():
+class DSIDEselectBestMed():
     def __init__(self,functioneveluate:Function,functionname:str,functiontype:str='UnimodalFunction',dimension:int=30,lowerbound:float=-100,upperbound:float=100,round:float=2000,populationsize:int=100,problemtype:str='Small'):
         self.functioneveluate = functioneveluate
         self.functionname = functionname
@@ -30,9 +28,9 @@ class DSIDEmixmeanVector():
         self.crossoverRate = 0
         self.scalingFactor = 0
         self.alpha = 0
-        self.counter = 0
+        #self.counter = 0
 
-    def selectionBestMutant(self,component:np.array)->np.array:
+    def sleectionBestMutant(self,component:np.array)->np.array:
         mutantList = []
         fitnessList = []
         mutantList.append(self.alpha*component[0]+self.scalingFactor*(component[1]-component[2]))
@@ -42,6 +40,14 @@ class DSIDEmixmeanVector():
         mutantList.append(self.alpha*component[2]+self.scalingFactor*(component[0]-component[1]))
         mutantList.append(self.alpha*component[2]+self.scalingFactor*(component[1]-component[0]))
 
+        # for build medain vector
+        dummyList = np.array(mutantList)
+        newVector = np.zeros(self.dimension)
+        for i in range(self.dimension):
+            newVector[i] = np.median(dummyList[:,i])
+
+        mutantList.append(newVector)
+
         mutantList = np.array(mutantList)
         for i in range(6):
             fitnessList.append(self.functioneveluate(mutantList[i]))
@@ -50,21 +56,6 @@ class DSIDEmixmeanVector():
         # return mutantList[indexMin],(indexMin+1)
         return mutantList[indexMin]
 
-    def selectionmeanMutant(self,component:np.array)->np.array:
-        mutantList = []
-        mutantList.append(self.alpha*component[0]+self.scalingFactor*(component[1]-component[2]))
-        mutantList.append(self.alpha*component[0]+self.scalingFactor*(component[2]-component[1]))
-        mutantList.append(self.alpha*component[1]+self.scalingFactor*(component[0]-component[2]))
-        mutantList.append(self.alpha*component[1]+self.scalingFactor*(component[2]-component[0]))
-        mutantList.append(self.alpha*component[2]+self.scalingFactor*(component[0]-component[1]))
-        mutantList.append(self.alpha*component[2]+self.scalingFactor*(component[1]-component[0]))
-
-        mutantList = np.array(mutantList)
-        mutantVector = np.zeros(self.dimension)
-        for i in range(self.dimension):
-            mutantVector[i] = np.mean(mutantList[:,i])
-        return mutantVector
-
     def buildTrialVector(self,rVector1:np.array,rVector2:np.array,rVector3:np.array,targetVector:np.array)->tuple:
         component = np.array([rVector1,rVector2,rVector3])
         dummyVector = np.random.uniform(low=0,high=1,size=self.dimension)
@@ -72,12 +63,7 @@ class DSIDEmixmeanVector():
         dTrial = np.zeros(self.dimension)
         crossoverCount = 0
         dimensionCount = 0
-        if(self.counter >= 1000):
-            mutantVector = self.selectionmeanMutant(component=component)
-            self.counter = 0
-
-        else:
-            mutantVector = self.selectionBestMutant(component=component)
+        mutantVector = self.selectionBestMutant(component=component)
 
         for i in range(self.dimension):
             if(dummyVector[i] > self.crossoverRate):
@@ -146,9 +132,6 @@ class DSIDEmixmeanVector():
                     minimizedValueRound[i] = minimizedValue
                     minRound = (i+1)
                     minuted = (now2-now).seconds
-                    self.counter = 0
-                else:
-                    self.counter = self.counter+1
                 
                 minimizedValueKeep[i][0] = minimizedValue
                 minimizedValueKeep[i][1] = minRound
@@ -364,4 +347,6 @@ class DSIDEmixmeanVector():
         print('Crossover rate: Max ',np.max(crossover_show[2]),' Min ',np.min(crossover_show[2]),' Mean ',np.mean(crossover_show[2]),flush=True)
         print('Scaling range: Max ',np.max(scaling_show[2]),' Min ',np.min(scaling_show[2]),' Mean ',np.mean(scaling_show[2]),flush=True)
         print('=================================================================',flush=True)
-    
+
+
+        
